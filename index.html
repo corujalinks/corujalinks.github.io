@@ -6,6 +6,8 @@
 
   <title>Coruja Links</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -13,91 +15,648 @@
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #080b10;
-      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #182319 0%, #090c0a 40%, #050706 100%);
+      color: #ffffff;
+      min-height: 100vh;
     }
 
-    header {
-      padding: 25px 8%;
-      border-bottom: 1px solid #20252d;
+    .hidden {
+      display: none !important;
+    }
+
+    /* LOGIN */
+
+    #login-screen {
+      min-height: 100vh;
       display: flex;
+      justify-content: center;
       align-items: center;
-      justify-content: space-between;
+      padding: 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(17, 22, 18, 0.95);
+      border: 1px solid #29332b;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 25px 70px rgba(0,0,0,.45);
     }
 
     .logo {
-      font-size: 24px;
-      font-weight: bold;
+      text-align: center;
+      font-size: 31px;
+      font-weight: 800;
+      margin-bottom: 7px;
     }
 
     .logo span {
-      color: #8b5cf6;
+      color: #54d477;
     }
 
-    main {
-      min-height: 80vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .subtitle {
       text-align: center;
-      padding: 30px;
+      color: #89958d;
+      margin-bottom: 35px;
     }
 
-    .box {
-      max-width: 700px;
+    label {
+      display: block;
+      color: #b8c2ba;
+      font-size: 14px;
+      margin-bottom: 8px;
     }
 
-    h1 {
-      font-size: 48px;
-      margin-bottom: 15px;
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #0b0f0c;
+      border: 1px solid #303b32;
+      border-radius: 10px;
+      color: white;
+      outline: none;
+      font-size: 15px;
     }
 
-    p {
-      color: #aab2bf;
-      font-size: 18px;
-      line-height: 1.6;
+    input:focus {
+      border-color: #4dcf70;
+      box-shadow: 0 0 0 3px rgba(77,207,112,.08);
     }
 
-    button {
-      margin-top: 25px;
-      padding: 16px 30px;
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input {
+      padding-right: 60px;
+    }
+
+    .show-password {
+      position: absolute;
+      right: 12px;
+      top: 13px;
+      background: transparent;
+      border: 0;
+      color: #8e9b91;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .login-button {
+      width: 100%;
       border: 0;
       border-radius: 10px;
-      background: #7c3aed;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
+      background: #40c866;
+      color: #071109;
+      font-weight: 800;
+      padding: 15px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .login-button:hover {
+      background: #54da77;
+    }
+
+    .login-button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    #message {
+      margin-top: 18px;
+      text-align: center;
+      min-height: 20px;
+      color: #ff7d7d;
+      font-size: 14px;
+    }
+
+    .security {
+      margin-top: 25px;
+      text-align: center;
+      color: #58625b;
+      font-size: 12px;
+    }
+
+
+    /* DASHBOARD */
+
+    #dashboard {
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 245px;
+      background: #090d0a;
+      border-right: 1px solid #202821;
+      padding: 25px 18px;
+    }
+
+    .sidebar-logo {
+      font-size: 21px;
+      font-weight: 800;
+      margin-bottom: 35px;
+    }
+
+    .sidebar-logo span {
+      color: #54d477;
+    }
+
+    .menu-item {
+      padding: 13px 15px;
+      margin-bottom: 8px;
+      color: #a9b4ab;
+      border-radius: 9px;
       cursor: pointer;
     }
 
-    button:hover {
-      background: #6d28d9;
+    .menu-item:hover,
+    .menu-item.active {
+      background: #152019;
+      color: white;
+    }
+
+    .content {
+      margin-left: 245px;
+      padding: 35px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: #9aa49c;
+      font-size: 13px;
+    }
+
+    .logout {
+      border: 1px solid #374139;
+      background: #111612;
+      color: white;
+      padding: 9px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .logout:hover {
+      background: #202821;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px,1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #101511;
+      border: 1px solid #252d27;
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .card-icon {
+      font-size: 27px;
+      margin-bottom: 13px;
+    }
+
+    .card-title {
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .card-text {
+      color: #849087;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .welcome {
+      margin-bottom: 28px;
+      color: #879189;
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        width: 75px;
+      }
+
+      .sidebar-logo {
+        font-size: 0;
+      }
+
+      .sidebar-logo::after {
+        content: "🦉";
+        font-size: 28px;
+      }
+
+      .menu-item {
+        font-size: 0;
+        text-align: center;
+      }
+
+      .menu-item::first-letter {
+        font-size: 20px;
+      }
+
+      .content {
+        margin-left: 75px;
+        padding: 20px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      #user-email {
+        display: none;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">
-    🦉 CORUJA <span>LINKS</span>
+<!-- LOGIN -->
+
+<div id="login-screen">
+
+  <div class="login-box">
+
+    <div class="logo">
+      🦉 CORUJA <span>LINKS</span>
+    </div>
+
+    <div class="subtitle">
+      Acesso restrito
+    </div>
+
+    <form id="login-form">
+
+      <label>E-mail</label>
+
+      <input
+        type="email"
+        id="email"
+        placeholder="Digite seu e-mail"
+        autocomplete="email"
+        required
+      >
+
+      <label>Senha</label>
+
+      <div class="password-wrap">
+
+        <input
+          type="password"
+          id="password"
+          placeholder="Digite sua senha"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          type="button"
+          class="show-password"
+          id="show-password"
+        >
+          MOSTRAR
+        </button>
+
+      </div>
+
+      <button
+        type="submit"
+        class="login-button"
+        id="login-button"
+      >
+        ENTRAR
+      </button>
+
+      <div id="message"></div>
+
+    </form>
+
+    <div class="security">
+      🔒 Ambiente autenticado
+    </div>
+
   </div>
-</header>
 
-<main>
-  <div class="box">
-    <h1>CORUJA LINKS</h1>
+</div>
 
-    <p>
-      Plataforma para criação e gerenciamento de links personalizados.
-    </p>
 
-    <button onclick="alert('Em breve!')">
-      CRIAR LINK
-    </button>
-  </div>
-</main>
+<!-- PAINEL -->
+
+<div id="dashboard" class="hidden">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">
+      🦉 CORUJA <span>LINKS</span>
+    </div>
+
+    <div class="menu-item active">🏠 Painel</div>
+    <div class="menu-item">➕ Criar Link</div>
+    <div class="menu-item">✨ Criar com IA</div>
+    <div class="menu-item">🔗 Meus Links</div>
+    <div class="menu-item">📊 Acessos</div>
+    <div class="menu-item">⚙️ Configurações</div>
+
+  </aside>
+
+
+  <main class="content">
+
+    <div class="topbar">
+
+      <h1>Painel</h1>
+
+      <div class="user-area">
+
+        <span id="user-email"></span>
+
+        <button class="logout" id="logout-button">
+          Sair
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="welcome">
+      Bem-vindo ao CORUJA LINKS.
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-icon">➕</div>
+        <div class="card-title">Criar Link</div>
+        <div class="card-text">
+          Crie uma nova página personalizada e publique seu link.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">✨</div>
+        <div class="card-title">Criar com IA</div>
+        <div class="card-text">
+          Use inteligência artificial para ajudar na criação do conteúdo.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Acessos</div>
+        <div class="card-text">
+          Consulte estatísticas dos seus links publicados.
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://broiszcnvgkqsvwnseol.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_8e-pHM2c-9VhRfHJPcriBw_UZ1_G6Yr";
+
+
+  const client =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+  const loginScreen =
+    document.getElementById("login-screen");
+
+  const dashboard =
+    document.getElementById("dashboard");
+
+  const loginForm =
+    document.getElementById("login-form");
+
+  const loginButton =
+    document.getElementById("login-button");
+
+  const message =
+    document.getElementById("message");
+
+  const userEmail =
+    document.getElementById("user-email");
+
+
+  function showDashboard(user) {
+
+    loginScreen.classList.add("hidden");
+
+    dashboard.classList.remove("hidden");
+
+    userEmail.textContent = user.email;
+
+  }
+
+
+  function showLogin() {
+
+    dashboard.classList.add("hidden");
+
+    loginScreen.classList.remove("hidden");
+
+  }
+
+
+  async function checkSession() {
+
+    const {
+      data: { session }
+    } = await client.auth.getSession();
+
+    if (session && session.user) {
+
+      showDashboard(session.user);
+
+    } else {
+
+      showLogin();
+
+    }
+
+  }
+
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      message.textContent = "";
+
+      loginButton.disabled = true;
+
+      loginButton.textContent = "ENTRANDO...";
+
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+
+      const {
+        data,
+        error
+      } = await client.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+      });
+
+
+      loginButton.disabled = false;
+
+      loginButton.textContent = "ENTRAR";
+
+
+      if (error) {
+
+        console.error(error);
+
+        if (
+          error.message
+            .toLowerCase()
+            .includes("invalid login")
+        ) {
+
+          message.textContent =
+            "E-mail ou senha incorretos.";
+
+        } else if (
+          error.message
+            .toLowerCase()
+            .includes("email not confirmed")
+        ) {
+
+          message.textContent =
+            "Este e-mail ainda não foi confirmado.";
+
+        } else {
+
+          message.textContent =
+            "Não foi possível entrar. Verifique seus dados.";
+
+        }
+
+        return;
+
+      }
+
+
+      if (data.user) {
+
+        showDashboard(data.user);
+
+      }
+
+    }
+  );
+
+
+  document
+    .getElementById("logout-button")
+    .addEventListener(
+      "click",
+      async function() {
+
+        await client.auth.signOut();
+
+        showLogin();
+
+      }
+    );
+
+
+  document
+    .getElementById("show-password")
+    .addEventListener(
+      "click",
+      function() {
+
+        const password =
+          document.getElementById("password");
+
+        if (password.type === "password") {
+
+          password.type = "text";
+
+          this.textContent = "OCULTAR";
+
+        } else {
+
+          password.type = "password";
+
+          this.textContent = "MOSTRAR";
+
+        }
+
+      }
+    );
+
+
+  client.auth.onAuthStateChange(
+    (event, session) => {
+
+      if (session && session.user) {
+
+        showDashboard(session.user);
+
+      } else {
+
+        showLogin();
+
+      }
+
+    }
+  );
+
+
+  checkSession();
+
+</script>
 
 </body>
 </html>
