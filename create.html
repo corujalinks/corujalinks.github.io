@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Link - Coruja Links</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #060906;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid #202820;
+      padding: 20px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #090d0a;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .logo span {
+      color: #54d477;
+    }
+
+    .back {
+      color: #aab4ac;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 850px;
+      margin: 45px auto;
+      padding: 0 22px;
+    }
+
+    .box {
+      background: #101511;
+      border: 1px solid #252e27;
+      border-radius: 16px;
+      padding: 30px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .sub {
+      color: #879188;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #bac4bc;
+      font-size: 14px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: #090d0a;
+      color: white;
+      border: 1px solid #303a32;
+      border-radius: 9px;
+      padding: 13px;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #4ed171;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 14px 22px;
+      background: #45ca69;
+      color: #071009;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+
+    #message {
+      margin-top: 20px;
+    }
+
+    .success {
+      background: #102517;
+      border: 1px solid #276b3b;
+      padding: 18px;
+      border-radius: 10px;
+      color: #9be9ae;
+    }
+
+    .error {
+      background: #281111;
+      border: 1px solid #703434;
+      padding: 18px;
+      border-radius: 10px;
+      color: #ffaaaa;
+    }
+
+    .generated {
+      margin-top: 14px;
+      font-family: monospace;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🦉 CORUJA <span>LINKS</span></div>
+  <a class="back" href="index.html">← Voltar ao painel</a>
+</header>
+
+<main>
+
+  <div class="box">
+
+    <h1>➕ Criar Link</h1>
+
+    <div class="sub">
+      Crie uma nova página e salve no CORUJA LINKS.
+    </div>
+
+    <form id="link-form">
+
+      <label>Tipo de página *</label>
+
+      <select id="page-type" required>
+        <option value="">Selecione</option>
+        <option value="anuncio">Anúncio</option>
+        <option value="convite">Convite</option>
+        <option value="comunicado">Comunicado</option>
+        <option value="artigo">Artigo / Reportagem</option>
+        <option value="documento">Documento informativo</option>
+        <option value="personalizada">Página personalizada</option>
+      </select>
+
+      <label>Nome interno *</label>
+
+      <input
+        id="internal-name"
+        placeholder="Ex.: Evento Jiu-Jitsu"
+        required
+      >
+
+      <label>Título</label>
+
+      <input
+        id="title"
+        placeholder="Título que aparecerá na página"
+      >
+
+      <label>Texto principal</label>
+
+      <textarea
+        id="main-text"
+        placeholder="Digite o conteúdo principal..."
+      ></textarea>
+
+      <label>Descrição</label>
+
+      <textarea
+        id="description"
+        placeholder="Descrição complementar..."
+      ></textarea>
+
+      <label>Imagem — URL por enquanto</label>
+
+      <input
+        id="image-url"
+        placeholder="https://..."
+      >
+
+      <button id="create-button" type="submit">
+        GERAR LINK
+      </button>
+
+      <div id="message"></div>
+
+    </form>
+
+  </div>
+
+</main>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://broiszcnvgkqsvwnseol.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_8e-pHM2c-9VhRfHJPcriBw_UZ1_G6Yr";
+
+const client =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+async function verifyLogin() {
+
+  const {
+    data: { session }
+  } = await client.auth.getSession();
+
+  if (!session) {
+    window.location.href = "index.html";
+  }
+
+}
+
+verifyLogin();
+
+
+function generateCode() {
+
+  const characters =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+  const array = new Uint32Array(6);
+
+  crypto.getRandomValues(array);
+
+  let code = "";
+
+  for (let i = 0; i < array.length; i++) {
+
+    code +=
+      characters[
+        array[i] % characters.length
+      ];
+
+  }
+
+  return code;
+
+}
+
+
+document
+  .getElementById("link-form")
+  .addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const button =
+        document.getElementById("create-button");
+
+      const message =
+        document.getElementById("message");
+
+      button.disabled = true;
+      button.textContent = "CRIANDO...";
+
+      message.innerHTML = "";
+
+
+      const pageType =
+        document.getElementById("page-type").value;
+
+      const internalName =
+        document.getElementById("internal-name").value.trim();
+
+      const title =
+        document.getElementById("title").value.trim();
+
+      const mainText =
+        document.getElementById("main-text").value.trim();
+
+      const description =
+        document.getElementById("description").value.trim();
+
+      const imageUrl =
+        document.getElementById("image-url").value.trim();
+
+
+      let created = false;
+      let finalCode = "";
+      let lastError = null;
+
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+
+        const code = generateCode();
+
+        const {
+          error
+        } = await client
+          .from("links")
+          .insert({
+
+            code: code,
+
+            page_type: pageType,
+
+            internal_name: internalName,
+
+            title: title || null,
+
+            main_text: mainText || null,
+
+            description: description || null,
+
+            image_url: imageUrl || null,
+
+            status: "active"
+
+          });
+
+
+        if (!error) {
+
+          created = true;
+          finalCode = code;
+
+          break;
+
+        }
+
+
+        lastError = error;
+
+        if (error.code !== "23505") {
+          break;
+        }
+
+      }
+
+
+      button.disabled = false;
+      button.textContent = "GERAR LINK";
+
+
+      if (!created) {
+
+        console.error(lastError);
+
+        message.innerHTML =
+          '<div class="error">' +
+          'Não foi possível criar o link.' +
+          '</div>';
+
+        return;
+
+      }
+
+
+      const futureUrl =
+        "https://corujalinks.github.io/view.html?c="
+        + finalCode;
+
+
+      message.innerHTML = `
+
+        <div class="success">
+
+          ✅ Link criado e salvo com sucesso.
+
+          <div class="generated">
+
+            Código:
+            <strong>${finalCode}</strong>
+
+            <br><br>
+
+            Endereço:
+            <br>
+
+            ${futureUrl}
+
+          </div>
+
+        </div>
+
+      `;
+
+      document
+        .getElementById("link-form")
+        .reset();
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
